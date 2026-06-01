@@ -265,6 +265,7 @@ function Dashboard({ stock, wagons, contracts, exportContracts, orders }) {
 // ── STOCK ──
 function StockModule({ stock, setStock, movements, setMovements }) {
   const [showAdd, setShowAdd] = useState(false);
+  const [showDetail, setShowDetail] = useState(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ date: new Date().toISOString().slice(0, 10), culture: CULTURES[0], elevator: ELEVATORS[0], amount: "", type: "приход", doc: "" });
 
