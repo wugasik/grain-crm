@@ -110,7 +110,7 @@ function DocumentsSection({ entityType, entityId }) {
   const [docs, setDocs] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
-  useEffect(() => { loadDocs(); }, [entityId]);
+  useEffect(() => { loadDocs(); }, [entityId]); // eslint-disable-line
   const loadDocs = async () => {
     setLoading(true);
     const { data } = await supabase.storage.from('documents').list(entityType + '/' + entityId);
