@@ -265,7 +265,6 @@ function Dashboard({ stock, wagons, contracts, exportContracts, orders }) {
 // ── STOCK ──
 function StockModule({ stock, setStock, movements, setMovements }) {
   const [showAdd, setShowAdd] = useState(false);
-  const [showDetail, setShowDetail] = useState(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ date: new Date().toISOString().slice(0, 10), culture: CULTURES[0], elevator: ELEVATORS[0], amount: "", type: "приход", doc: "" });
 
@@ -356,9 +355,8 @@ function StockModule({ stock, setStock, movements, setMovements }) {
 // ── CONTRACTS ──
 function ContractsModule({ contracts, setContracts }) {
   const [showAdd, setShowAdd] = useState(false);
-  const [showDetail, setShowDetail] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ supplier_name: "", culture: CULTURES[0], elevator: ELEVATORS[0], volume: "", delivered: "", price: "", deadline: "", status: "active" });
+
 
   const handleAdd = async () => {
     if (!form.supplier_name || !form.volume) return;
