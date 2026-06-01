@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = "https://liyaovykdxjlabvlojaq.supabase.co";
@@ -97,68 +97,6 @@ const css = `
 `;
 
 const fmt = (n) => Number(n || 0).toLocaleString("ru-RU");
-function getFileIcon(name) {
-  const ext = (name || '').split('.').pop().toLowerCase();
-  if (ext === 'pdf') return '📄';
-  if (['jpg','jpeg','png'].includes(ext)) return '🖼️';
-  if (['doc','docx'].includes(ext)) return '📝';
-  if (['xls','xlsx'].includes(ext)) return '📊';
-  return '📎';
-}
-
-function DocumentsSection({ entityType, entityId }) {
-  const [docs, setDocs] = useState([]);
-  const [uploading, setUploading] = useState(false);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => { loadDocs(); }, [entityId]); // eslint-disable-line
-  const loadDocs = async () => {
-    setLoading(true);
-    const { data } = await supabase.storage.from('documents').list(entityType + '/' + entityId);
-    setDocs(data || []);
-    setLoading(false);
-  };
-  const handleUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setUploading(true);
-    const path = entityType + '/' + entityId + '/' + Date.now() + '_' + file.name;
-    await supabase.storage.from('documents').upload(path, file);
-    await loadDocs();
-    setUploading(false);
-  };
-  const handleDelete = async (fileName) => {
-    await supabase.storage.from('documents').remove([entityType + '/' + entityId + '/' + fileName]);
-    setDocs(prev => prev.filter(d => d.name !== fileName));
-  };
-  const handleOpen = async (fileName) => {
-    const { data } = await supabase.storage.from('documents').createSignedUrl(entityType + '/' + entityId + '/' + fileName, 3600);
-    if (data && data.signedUrl) window.open(data.signedUrl, '_blank');
-  };
-  return (
-    <div style={{ marginTop: 20 }}>
-      <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', marginBottom: 10 }}>📎 Документы</div>
-      <label style={{ display: 'block', border: '2px dashed var(--border)', borderRadius: 10, padding: 20, textAlign: 'center', cursor: 'pointer' }}>
-        <input type="file" style={{ display: 'none' }} onChange={handleUpload} accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" />
-        <div style={{ fontSize: 28 }}>📁</div>
-        <div style={{ color: 'var(--muted)', fontSize: 13, marginTop: 8 }}>{uploading ? '⏳ Загружаю...' : 'Нажмите чтобы прикрепить документ'}</div>
-      </label>
-      <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {loading && <div style={{ color: 'var(--muted)', fontSize: 12 }}>Загружаю...</div>}
-        {!loading && docs.length === 0 && <div style={{ color: 'var(--muted)', fontSize: 12 }}>Нет документов</div>}
-        {docs.map(doc => (
-          <div key={doc.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 14px' }}>
-            <span style={{ fontSize: 13 }}>{getFileIcon(doc.name)} {doc.name.replace(/^\d+_/, '')}</span>
-            <div style={{ display: 'flex', gap: 6 }}>
-              <button className="btn btn-ghost" style={{padding:'4px 10px',fontSize:12}} onClick={() => handleOpen(doc.name)}>⬇️ Открыть</button>
-              <button className="btn btn-danger" style={{padding:'4px 8px',fontSize:12}} onClick={() => handleDelete(doc.name)}>✕</button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 
 function Modal({ title, onClose, children, footer }) {
   return (
@@ -325,13 +263,7 @@ function StockModule({ stock, setStock, movements, setMovements }) {
           </tbody>
         </table>
       </div>
-      {showDetail && (
-    <Modal title={"Договор — " + showDetail.supplier_name} onClose={() => setShowDetail(null)}
-      footer={<button className="btn btn-ghost" onClick={() => setShowDetail(null)}>Закрыть</button>}>
-      <DocumentsSection entityType="contracts" entityId={showDetail.id} />
-    </Modal>
-  )}
-  {showAdd && (
+      {showAdd && (
         <Modal title="Добавить движение зерна" onClose={() => setShowAdd(false)}
           footer={<><button className="btn btn-ghost" onClick={() => setShowAdd(false)}>Отмена</button><button className="btn btn-primary" onClick={handleAdd} disabled={saving}>{saving ? "Сохраняю..." : "Сохранить"}</button></>}>
           <div className="form-row">
@@ -356,7 +288,7 @@ function StockModule({ stock, setStock, movements, setMovements }) {
 function ContractsModule({ contracts, setContracts }) {
   const [showAdd, setShowAdd] = useState(false);
   const [saving, setSaving] = useState(false);
-
+  const [form, setForm] = useState({ supplier_name: "", culture: CULTURES[0], elevator: ELEVATORS[0], volume: "", delivered: "", price: "", deadline: "", status: "active" });
 
   const handleAdd = async () => {
     if (!form.supplier_name || !form.volume) return;
@@ -398,7 +330,7 @@ function ContractsModule({ contracts, setContracts }) {
                   </td>
                   <td style={{ color: "var(--blue)" }}>{fmt(c.price)} ₸</td>
                   <td><StatusBadge status={c.status} /></td>
-                  <td><button className="btn btn-ghost" style={{padding:'4px 10px',fontSize:11,marginRight:4}} onClick={() => setShowDetail(c)}>📎</button><button className="btn btn-danger" style={{ padding: "4px 8px", fontSize: 11 }} onClick={() => handleDelete(c.id)}>✕</button></td>
+                  <td><button className="btn btn-danger" style={{ padding: "4px 8px", fontSize: 11 }} onClick={() => handleDelete(c.id)}>✕</button></td>
                 </tr>
               );
             })}
@@ -794,3 +726,5 @@ export default function App() {
     </>
   );
 }
+
+
