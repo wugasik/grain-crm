@@ -325,7 +325,13 @@ function StockModule({ stock, setStock, movements, setMovements }) {
           </tbody>
         </table>
       </div>
-      {showAdd && (
+      {showDetail && (
+    <Modal title={"Договор — " + showDetail.supplier_name} onClose={() => setShowDetail(null)}
+      footer={<button className="btn btn-ghost" onClick={() => setShowDetail(null)}>Закрыть</button>}>
+      <DocumentsSection entityType="contracts" entityId={showDetail.id} />
+    </Modal>
+  )}
+  {showAdd && (
         <Modal title="Добавить движение зерна" onClose={() => setShowAdd(false)}
           footer={<><button className="btn btn-ghost" onClick={() => setShowAdd(false)}>Отмена</button><button className="btn btn-primary" onClick={handleAdd} disabled={saving}>{saving ? "Сохраняю..." : "Сохранить"}</button></>}>
           <div className="form-row">
@@ -349,6 +355,7 @@ function StockModule({ stock, setStock, movements, setMovements }) {
 // ── CONTRACTS ──
 function ContractsModule({ contracts, setContracts }) {
   const [showAdd, setShowAdd] = useState(false);
+  const [showDetail, setShowDetail] = useState(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ supplier_name: "", culture: CULTURES[0], elevator: ELEVATORS[0], volume: "", delivered: "", price: "", deadline: "", status: "active" });
 
@@ -392,7 +399,7 @@ function ContractsModule({ contracts, setContracts }) {
                   </td>
                   <td style={{ color: "var(--blue)" }}>{fmt(c.price)} ₸</td>
                   <td><StatusBadge status={c.status} /></td>
-                  <td><button className="btn btn-danger" style={{ padding: "4px 8px", fontSize: 11 }} onClick={() => handleDelete(c.id)}>✕</button></td>
+                  <td><button className="btn btn-ghost" style={{padding:'4px 10px',fontSize:11,marginRight:4}} onClick={() => setShowDetail(c)}>📎</button><button className="btn btn-danger" style={{ padding: "4px 8px", fontSize: 11 }} onClick={() => handleDelete(c.id)}>✕</button></td>
                 </tr>
               );
             })}
